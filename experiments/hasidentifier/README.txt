@@ -1,3 +1,11 @@
+SUPERSEDED: tsc/internal/ast/ast.go no longer contains the adaptive "bounded3"
+collector described below. It was replaced by a shape filter: a literal is kept
+only if its text could equal an identifier or private name, which is the only kind
+of name HasIdentifier is ever queried with. That gives the same answer as the
+original collector for every possible query (including the direct-eval cases in
+eval/), with no probe or heuristic thresholds. The evidence below is kept as a
+record of the bounded3 investigation; its tests and code are in commit 126605a72.
+
 WIP: SourceFile.HasIdentifier literal reservation investigation
 
 Base: 49e69830214c55a8cc361aa3c4e7412d0afd02fe
