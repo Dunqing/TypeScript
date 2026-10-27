@@ -2607,8 +2607,64 @@ func (file *SourceFile) HasIdentifier(name string) bool {
 
 func collectIdentifiersForSourceFile(sourceFile *SourceFile) collections.Set[string] {
 	var identifiers collections.Set[string]
-	var collect func(*Node) bool
-	collect = func(node *Node) bool {
+	var collectFiltered func(*Node) bool
+	collectFiltered = func(node *Node) bool {
+		switch node.Kind {
+		case KindIdentifier:
+			identifiers.Add(node.AsIdentifier().Text)
+		case KindPrivateIdentifier:
+			identifiers.Add(node.AsPrivateIdentifier().Text)
+		case KindStringLiteral,
+			KindNumericLiteral,
+			KindBigIntLiteral,
+			KindNoSubstitutionTemplateLiteral:
+			// Preserve literal names and keys, but not ordinary literal values.
+			reserve := false
+			if parent := node.Parent; parent != nil {
+				switch parent.Kind {
+				case KindArrayLiteralExpression:
+				case KindVariableDeclaration:
+					reserve = parent.AsVariableDeclaration().Name() == node
+				case KindPropertySignature:
+					reserve = parent.AsPropertySignatureDeclaration().Name() == node
+				case KindPropertyDeclaration:
+					reserve = parent.AsPropertyDeclaration().Name() == node
+				case KindPropertyAssignment:
+					reserve = parent.AsPropertyAssignment().Name() == node
+				case KindElementAccessExpression, KindImportDeclaration, KindJSImportDeclaration, KindExportDeclaration, KindExternalModuleReference:
+					reserve = true
+				case KindLiteralType:
+					reserve = parent.Parent != nil && parent.Parent.Kind == KindImportType
+				case KindComputedPropertyName:
+					reserve = IsStringOrNumericLiteralLike(node) && IsDeclaration(parent.Parent)
+				default:
+					reserve = IsDeclarationNameOrImportPropertyName(node)
+				}
+			}
+			if reserve {
+				var text string
+				switch node.Kind {
+				case KindStringLiteral:
+					text = node.AsStringLiteral().Text
+				case KindNumericLiteral:
+					text = node.AsNumericLiteral().Text
+				case KindBigIntLiteral:
+					text = node.AsBigIntLiteral().Text
+				case KindNoSubstitutionTemplateLiteral:
+					text = node.AsNoSubstitutionTemplateLiteral().Text
+				}
+				identifiers.Add(text)
+			}
+		}
+		// Tokens have no children; avoid the general AST dispatch for leaves.
+		if node.Kind <= KindLastToken {
+			return false
+		}
+		node.ForEachChild(collectFiltered)
+		return false
+	}
+	var collectAll func(*Node) bool
+	collectAll = func(node *Node) bool {
 		switch node.Kind {
 		case KindIdentifier,
 			KindPrivateIdentifier,
@@ -2618,10 +2674,44 @@ func collectIdentifiersForSourceFile(sourceFile *SourceFile) collections.Set[str
 			KindNoSubstitutionTemplateLiteral:
 			identifiers.Add(node.Text())
 		}
-		node.ForEachChild(collect)
+		if node.Kind <= KindLastToken {
+			return false
+		}
+		node.ForEachChild(collectAll)
 		return false
 	}
-	collect(sourceFile.AsNode())
+	if sourceFile.TextCount <= 64 {
+		collectAll(sourceFile.AsNode())
+		return identifiers
+	}
+	// Bound the probe by both text leaves and total nodes. Small/low-entropy
+	// files keep the original reservation policy and small-map lookup path.
+	textCount, nodeCount := 0, 0
+	var sample func(*Node) bool
+	sample = func(node *Node) bool {
+		nodeCount++
+		switch node.Kind {
+		case KindIdentifier, KindPrivateIdentifier, KindStringLiteral, KindNumericLiteral, KindBigIntLiteral, KindNoSubstitutionTemplateLiteral:
+			identifiers.Add(node.Text())
+			textCount++
+		}
+		if identifiers.Len() > 8 || textCount >= 64 || nodeCount >= 256 {
+			return true
+		}
+		if node.Kind <= KindLastToken {
+			return false
+		}
+		return node.ForEachChild(sample)
+	}
+	sample(sourceFile.AsNode())
+	if identifiers.Len() > 8 {
+		// Go 1.27 clear retains the grown representation. Filtering therefore
+		// cannot change a large original map into the slower small map.
+		clear(identifiers.M)
+		collectFiltered(sourceFile.AsNode())
+	} else if textCount >= 64 || nodeCount >= 256 {
+		collectAll(sourceFile.AsNode())
+	}
 	return identifiers
 }
 
