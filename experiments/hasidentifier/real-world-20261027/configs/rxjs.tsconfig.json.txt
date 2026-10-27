@@ -1,0 +1,4 @@
+{"extends": "/home/user/bench/projects/rxjs/src/tsconfig.esm.json",
+ "compilerOptions": {"incremental": false, "outDir": "out", "rootDir": "/home/user/bench/projects/rxjs/src", "declaration": true,
+   "baseUrl": null, "moduleResolution": "bundler", "paths": {"rxjs": ["/home/user/bench/projects/rxjs/src/index.ts"], "rxjs/*": ["/home/user/bench/projects/rxjs/src/*"]}},
+ "include": ["/home/user/bench/projects/rxjs/src/**/*.ts"]}

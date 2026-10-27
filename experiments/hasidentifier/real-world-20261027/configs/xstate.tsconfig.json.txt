@@ -1,0 +1,3 @@
+{"extends": "/home/user/bench/projects/xstate/tsconfig.json",
+ "compilerOptions": {"noEmit": false, "declaration": true, "rewriteRelativeImportExtensions": true, "outDir": "out", "rootDir": "/home/user/bench/projects/xstate/packages/core/src", "types": ["node"], "typeRoots": ["/home/user/bench/node_modules/@types"]},
+ "include": ["/home/user/bench/projects/xstate/packages/core/src/**/*"]}

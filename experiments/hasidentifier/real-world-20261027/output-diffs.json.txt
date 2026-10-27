@@ -1,0 +1,62 @@
+{
+  "ts58/base2": {
+    "files": 1136,
+    "differing": []
+  },
+  "ts58/bounded3": {
+    "files": 1136,
+    "differing": []
+  },
+  "ts58/shape": {
+    "files": 1136,
+    "differing": []
+  },
+  "datefns/base2": {
+    "files": 2456,
+    "differing": []
+  },
+  "datefns/bounded3": {
+    "files": 2456,
+    "differing": []
+  },
+  "datefns/shape": {
+    "files": 2456,
+    "differing": []
+  },
+  "rxjs/base2": {
+    "files": 753,
+    "differing": []
+  },
+  "rxjs/bounded3": {
+    "files": 753,
+    "differing": []
+  },
+  "rxjs/shape": {
+    "files": 753,
+    "differing": []
+  },
+  "xstate/base2": {
+    "files": 90,
+    "differing": []
+  },
+  "xstate/bounded3": {
+    "files": 90,
+    "differing": []
+  },
+  "xstate/shape": {
+    "files": 90,
+    "differing": []
+  },
+  "zod/base2": {
+    "files": 46,
+    "differing": []
+  },
+  "zod/bounded3": {
+    "files": 46,
+    "differing": []
+  },
+  "zod/shape": {
+    "files": 46,
+    "differing": []
+  }
+}

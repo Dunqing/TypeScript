@@ -1,0 +1,3 @@
+{"extends": "/home/user/bench/projects/zod/configs/tsconfig.cjs.json",
+ "compilerOptions": {"outDir": "out", "rootDir": "/home/user/bench/projects/zod/src", "moduleResolution": "bundler", "downlevelIteration": null},
+ "include": ["/home/user/bench/projects/zod/src/**/*"], "exclude": ["/home/user/bench/projects/zod/src/**/__tests__"]}

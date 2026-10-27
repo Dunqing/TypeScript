@@ -1,0 +1,3 @@
+{"extends": "/home/user/bench/projects/date-fns/tsconfig.lib.json",
+ "compilerOptions": {"emitDeclarationOnly": false, "outDir": "out", "rootDir": "/home/user/bench/projects/date-fns/src"},
+ "include": ["/home/user/bench/projects/date-fns/src/**/*.ts"], "exclude": ["/home/user/bench/projects/date-fns/src/**/test.ts", "/home/user/bench/projects/date-fns/src/**/*.test.ts", "/home/user/bench/projects/date-fns/src/**/tests.ts", "/home/user/bench/projects/date-fns/src/**/test/**"]}
