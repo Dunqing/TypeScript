@@ -1,0 +1,76 @@
+package ast_test
+
+import (
+	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/microsoft/TypeScript/tsc/internal/ast"
+	"github.com/microsoft/TypeScript/tsc/internal/testutil/parsetestutil"
+)
+
+var deepLookupSink bool
+
+func BenchmarkDeepIdentifierMapLayout(b *testing.B) {
+	for _, c := range []struct {
+		name    string
+		n, hint int
+		grown   bool
+	}{
+		{"one-small", 1, 0, false},
+		{"two-small", 2, 0, false},
+		{"eight-small", 8, 0, false},
+		{"nine-large", 9, 0, false},
+		{"sixteen-large", 16, 0, false},
+		{"many-large", 8193, 0, false},
+		{"one-hint9", 1, 9, false},
+		{"one-grown", 1, 0, true},
+		{"eight-hint9", 8, 9, false},
+	} {
+		for _, q := range []string{"miss", "hit"} {
+			b.Run(c.name+"/"+q, func(b *testing.B) {
+				names := []string{strings.Clone("values")}
+				for i := 1; i < c.n; i++ {
+					names = append(names, fmt.Sprintf("ordinary value %d", i))
+				}
+				file := parsetestutil.ParseTypeScript("const values=0;", false)
+				ast.SetIdentifierMapForDeepExperiment(file, names, c.hint, c.grown)
+				query := "candidate_0"
+				if q == "hit" {
+					query = strings.Clone("values")
+				}
+				want := q == "hit"
+				if file.HasIdentifier(query) != want {
+					b.Fatal("wrong map membership")
+				}
+				var hit bool
+				b.ReportAllocs()
+				b.ResetTimer()
+				for b.Loop() {
+					for range 64 {
+						hit = file.HasIdentifier(query)
+					}
+				}
+				deepLookupSink = hit
+			})
+		}
+	}
+}
+
+func BenchmarkDeepRawMapLayout(b *testing.B) {
+	for _, hint := range []int{0, 9} {
+		b.Run(fmt.Sprintf("one-hint%d", hint), func(b *testing.B) {
+			m := make(map[string]struct{}, hint)
+			m[strings.Clone("values")] = struct{}{}
+			var hit bool
+			b.ReportAllocs()
+			b.ResetTimer()
+			for b.Loop() {
+				for range 64 {
+					_, hit = m["candidate_0"]
+				}
+			}
+			deepLookupSink = hit
+		})
+	}
+}

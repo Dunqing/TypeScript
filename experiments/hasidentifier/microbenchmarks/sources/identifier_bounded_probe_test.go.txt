@@ -1,0 +1,74 @@
+package ast_test
+
+import (
+	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/microsoft/TypeScript/tsc/internal/ast"
+	"github.com/microsoft/TypeScript/tsc/internal/testutil/parsetestutil"
+)
+
+func BenchmarkBoundedCycles(b *testing.B) {
+	for _, distinct := range []int{1, 2, 7, 8, 9, 8192} {
+		for _, mode := range []string{"baseline", "bounded"} {
+			b.Run(fmt.Sprintf("D%d/%s", distinct, mode), func(b *testing.B) {
+				var src strings.Builder
+				src.WriteString("const values=[")
+				for i := range 8192 {
+					fmt.Fprintf(&src, "%q,", fmt.Sprintf("ordinary value %d", i%distinct))
+				}
+				src.WriteString("];values;")
+				file := parsetestutil.ParseTypeScript(src.String(), false)
+				baseline := mode == "baseline"
+				b.ReportAllocs()
+				b.ResetTimer()
+				for b.Loop() {
+					ast.RebuildIdentifiersForBoundedProbe(file, baseline)
+					file.HasIdentifier("candidate_0")
+				}
+			})
+		}
+	}
+}
+
+func BenchmarkBoundedActualQueries(b *testing.B) {
+	for _, n := range []int{1, 7, 8, 127, 8192} {
+		for _, length := range []int{12, 128} {
+			var src strings.Builder
+			src.WriteString("interface Values {")
+			var last string
+			for i := range n {
+				last = fmt.Sprintf("k%07d", i) + strings.Repeat("a", length-8)
+				fmt.Fprintf(&src, "%q:number;", last)
+			}
+			src.WriteString("}")
+			for _, mode := range []string{"hit", "early-miss", "middle-miss", "longer-miss"} {
+				b.Run(fmt.Sprintf("N%d/L%d/%s", n, length, mode), func(b *testing.B) {
+					file := parsetestutil.ParseTypeScript(src.String(), false)
+					query := strings.Clone(last)
+					switch mode {
+					case "early-miss":
+						query = "z" + query[1:]
+					case "middle-miss":
+						query = query[:length/2] + "z" + query[length/2+1:]
+					case "longer-miss":
+						query = strings.Repeat("z", 4096)
+					}
+					if file.HasIdentifier(query) != (mode == "hit") {
+						b.Fatal("membership mismatch")
+					}
+					var found bool
+					b.ReportAllocs()
+					b.ResetTimer()
+					for b.Loop() {
+						for range 64 {
+							found = file.HasIdentifier(query)
+						}
+					}
+					deepLookupSink = found
+				})
+			}
+		}
+	}
+}

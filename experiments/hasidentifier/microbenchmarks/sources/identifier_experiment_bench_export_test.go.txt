@@ -1,0 +1,12 @@
+package ast
+
+import "sync"
+
+func ResetIdentifierCacheForExperiment(file *SourceFile) {
+	file.identifiersOnce = sync.Once{}
+	file.identifiers.M = nil
+}
+
+func IdentifierCacheSizeForExperiment(file *SourceFile) int {
+	return file.identifiers.Len()
+}

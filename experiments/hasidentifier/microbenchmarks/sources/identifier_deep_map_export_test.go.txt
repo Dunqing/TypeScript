@@ -1,0 +1,20 @@
+package ast
+
+import "sync"
+
+func SetIdentifierMapForDeepExperiment(file *SourceFile, names []string, hint int, growThenShrink bool) {
+	file.identifiersOnce = sync.Once{}
+	file.identifiers.M = make(map[string]struct{}, hint)
+	if growThenShrink {
+		for _, s := range []string{"extra0", "extra1", "extra2", "extra3", "extra4", "extra5", "extra6", "extra7", "extra8"} {
+			file.identifiers.M[s] = struct{}{}
+		}
+		for k := range file.identifiers.M {
+			delete(file.identifiers.M, k)
+		}
+	}
+	for _, name := range names {
+		file.identifiers.M[name] = struct{}{}
+	}
+	file.identifiersOnce.Do(func() {})
+}

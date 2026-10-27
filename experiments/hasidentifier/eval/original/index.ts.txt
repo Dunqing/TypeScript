@@ -1,0 +1,6 @@
+function getObject() { return { value: 1 }; }
+const probeName = "_a";
+const value = getObject()?.value;
+let hidden = false;
+try { eval(probeName); } catch (e) { hidden = e instanceof ReferenceError; }
+if (!hidden || value !== 1) throw new Error("generated temporary became visible to direct eval");

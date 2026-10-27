@@ -1,0 +1,83 @@
+package ast_test
+
+import (
+	"strings"
+	"syscall"
+	"testing"
+
+	"github.com/microsoft/TypeScript/tsc/internal/ast"
+	"github.com/microsoft/TypeScript/tsc/internal/testutil/parsetestutil"
+)
+
+func BenchmarkBoundedSameBinaryCollector(b *testing.B) {
+	for _, kind := range []string{"properties", "identifiers", "distinct", "repeated"} {
+		for _, mode := range []string{"baseline", "bounded"} {
+			b.Run(kind+"/"+mode, func(b *testing.B) {
+				file := parsetestutil.ParseTypeScript(collectorSource(kind, 8192), false)
+				baseline := mode == "baseline"
+				var before, after syscall.Rusage
+				ast.RebuildIdentifiersForBoundedProbe(file, baseline)
+				entries := ast.IdentifierCacheSizeForExperiment(file)
+				b.ReportAllocs()
+				if err := syscall.Getrusage(syscall.RUSAGE_SELF, &before); err != nil {
+					b.Fatal(err)
+				}
+				b.ResetTimer()
+				for b.Loop() {
+					ast.RebuildIdentifiersForBoundedProbe(file, baseline)
+					for range 64 {
+						file.HasIdentifier("candidate_0")
+					}
+				}
+				if err := syscall.Getrusage(syscall.RUSAGE_SELF, &after); err != nil {
+					b.Fatal(err)
+				}
+				b.ReportMetric(float64(deepProcessCPU(&after)-deepProcessCPU(&before))/float64(b.N), "cpu-ns/op")
+				b.ReportMetric(float64(entries), "entries/op")
+			})
+		}
+	}
+}
+
+func BenchmarkBoundedSameBinaryCached(b *testing.B) {
+	for _, mode := range []string{"baseline", "bounded"} {
+		b.Run(mode, func(b *testing.B) {
+			file := parsetestutil.ParseTypeScript(collectorSource("distinct", 8192), false)
+			ast.RebuildIdentifiersForBoundedProbe(file, mode == "baseline")
+			var found bool
+			b.ReportAllocs()
+			b.ResetTimer()
+			for b.Loop() {
+				for range 64 {
+					found = file.HasIdentifier("candidate_0")
+				}
+			}
+			deepLookupSink = found
+		})
+	}
+}
+
+func BenchmarkBoundedSameBinaryLong(b *testing.B) {
+	for _, src := range []string{`interface V {"short":number;}`, `interface V {"` + strings.Repeat("a", 128) + `":number;}`} {
+		label := "short-key"
+		if len(src) > 100 {
+			label = "long-key"
+		}
+		for _, mode := range []string{"baseline", "bounded"} {
+			b.Run(label+"/"+mode, func(b *testing.B) {
+				file := parsetestutil.ParseTypeScript(src, false)
+				ast.RebuildIdentifiersForBoundedProbe(file, mode == "baseline")
+				query := strings.Repeat("z", 4096)
+				var found bool
+				b.ReportAllocs()
+				b.ResetTimer()
+				for b.Loop() {
+					for range 64 {
+						found = file.HasIdentifier(query)
+					}
+				}
+				deepLookupSink = found
+			})
+		}
+	}
+}

@@ -1,0 +1,87 @@
+package ast_test
+
+import (
+	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/microsoft/TypeScript/tsc/internal/ast"
+	"github.com/microsoft/TypeScript/tsc/internal/testutil/parsetestutil"
+)
+
+func collectorSource(kind string, n int) string {
+	var s strings.Builder
+	s.WriteString("const values = [\n")
+	if kind == "properties" || kind == "declarations" {
+		s.Reset()
+		s.WriteString("interface Values {\n")
+	}
+	if kind == "identifiers" {
+		s.Reset()
+	}
+	for i := range n {
+		switch kind {
+		case "distinct":
+			fmt.Fprintf(&s, "\"ordinary value %d\",\n", i)
+		case "numeric":
+			fmt.Fprintf(&s, "%d,\n", i)
+		case "bigint":
+			fmt.Fprintf(&s, "%dn,\n", i)
+		case "templates":
+			fmt.Fprintf(&s, "`ordinary value %d`,\n", i)
+		case "repeated":
+			s.WriteString("\"ordinary value\",\n")
+		case "names":
+			fmt.Fprintf(&s, "\"__decorate_%d\",\n", i+1)
+		case "identifiers":
+			fmt.Fprintf(&s, "const identifier%d = 0;\n", i)
+		case "properties":
+			fmt.Fprintf(&s, "\"property%d\": number;\n", i)
+		case "declarations":
+			fmt.Fprintf(&s, "field%d: \"ordinary type value %d\";\n", i, i)
+		}
+	}
+	if kind == "properties" || kind == "declarations" {
+		s.WriteString("}")
+	} else if kind != "identifiers" {
+		s.WriteString("]; values;")
+	}
+	return s.String()
+}
+
+func BenchmarkIdentifierCollector(b *testing.B) {
+	for _, kind := range []string{"distinct", "numeric", "bigint", "templates", "repeated", "names", "identifiers", "properties", "declarations"} {
+		for _, n := range []int{4096, 8192} {
+			b.Run(fmt.Sprintf("%s/N%d", kind, n), func(b *testing.B) {
+				file := parsetestutil.ParseTypeScript(collectorSource(kind, n), false)
+				file.HasIdentifier("candidate_0")
+				entries := ast.IdentifierCacheSizeForExperiment(file)
+				var names [64]string
+				for i := range names {
+					names[i] = fmt.Sprintf("candidate_%d", i)
+				}
+				b.ReportAllocs()
+				b.ResetTimer()
+				for b.Loop() {
+					ast.ResetIdentifierCacheForExperiment(file)
+					for _, name := range names {
+						file.HasIdentifier(name)
+					}
+				}
+				b.ReportMetric(float64(entries), "entries/op")
+			})
+		}
+	}
+}
+
+func BenchmarkIdentifierCachedQueries(b *testing.B) {
+	file := parsetestutil.ParseTypeScript(collectorSource("distinct", 8192), false)
+	file.HasIdentifier("candidate_0")
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		for range 64 {
+			file.HasIdentifier("candidate_0")
+		}
+	}
+}

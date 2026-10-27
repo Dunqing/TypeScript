@@ -1,0 +1,45 @@
+//go:build linux
+
+package ast_test
+
+import (
+	"fmt"
+	"syscall"
+	"testing"
+
+	"github.com/microsoft/TypeScript/tsc/internal/ast"
+	"github.com/microsoft/TypeScript/tsc/internal/testutil/parsetestutil"
+)
+
+func deepProcessCPU(v *syscall.Rusage) int64 {
+	return (v.Utime.Sec+v.Stime.Sec)*1e9 + (v.Utime.Usec+v.Stime.Usec)*1e3
+}
+
+func BenchmarkDeepCollectorCPU(b *testing.B) {
+	for _, kind := range []string{"properties", "identifiers"} {
+		b.Run(kind, func(b *testing.B) {
+			file := parsetestutil.ParseTypeScript(collectorSource(kind, 8192), false)
+			file.HasIdentifier("candidate_0")
+			var names [64]string
+			for i := range names {
+				names[i] = fmt.Sprintf("candidate_%d", i)
+			}
+			var before, after syscall.Rusage
+			b.ReportAllocs()
+			if err := syscall.Getrusage(syscall.RUSAGE_SELF, &before); err != nil {
+				b.Fatal(err)
+			}
+			b.ResetTimer()
+			for b.Loop() {
+				ast.ResetIdentifierCacheForExperiment(file)
+				for _, name := range names {
+					file.HasIdentifier(name)
+				}
+			}
+			if err := syscall.Getrusage(syscall.RUSAGE_SELF, &after); err != nil {
+				b.Fatal(err)
+			}
+			b.ReportMetric(float64(deepProcessCPU(&after)-deepProcessCPU(&before))/float64(b.N), "cpu-ns/op")
+		})
+	}
+}

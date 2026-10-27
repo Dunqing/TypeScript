@@ -1,0 +1,9 @@
+{
+  "binary_sha256": "e4ff5cb16cb998dbb12e33238a7fa5198c69a8921fd74ab77ffc8f95a39601a4",
+  "affinity": [
+    2
+  ],
+  "GOMAXPROCS": 1,
+  "same_binary": true,
+  "gcflags": "all=-dwarf=false"
+}

@@ -1,0 +1,7 @@
+let __pad0,__pad1,__pad2,__pad3,__pad4,__pad5,__pad6,__pad7,__pad8,__pad9,__pad10,__pad11,__pad12,__pad13,__pad14,__pad15,__pad16,__pad17,__pad18,__pad19,__pad20,__pad21,__pad22,__pad23,__pad24,__pad25,__pad26,__pad27,__pad28,__pad29,__pad30,__pad31,__pad32,__pad33,__pad34,__pad35,__pad36,__pad37,__pad38,__pad39,__pad40,__pad41,__pad42,__pad43,__pad44,__pad45,__pad46,__pad47,__pad48,__pad49,__pad50,__pad51,__pad52,__pad53,__pad54,__pad55,__pad56,__pad57,__pad58,__pad59,__pad60,__pad61,__pad62,__pad63,__pad64;
+function getObject() { return { value: 1 }; }
+const probeName = "_a";
+const value = getObject()?.value;
+let hidden = false;
+try { eval(probeName); } catch (e) { hidden = e instanceof ReferenceError; }
+if (!hidden || value !== 1) throw new Error("generated temporary became visible to direct eval");

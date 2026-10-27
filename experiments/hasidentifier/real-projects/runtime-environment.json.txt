@@ -1,0 +1,7 @@
+{
+  "GOGC": null,
+  "GOMEMLIMIT": null,
+  "GODEBUG": null,
+  "GOAMD64": null,
+  "GOEXPERIMENT": null
+}

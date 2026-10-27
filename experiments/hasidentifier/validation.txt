@@ -1,0 +1,197 @@
+Using /workspace/work/candidate/Herebyfile.mjs to run validate
+Starting generate:go
+$ go env -json GOOS GOARCH GOROOT
+$ go tool golang.org/x/tools/cmd/stringer -type=Kind -output=kind_stringer_generated.go
+$ dprint fmt kind_stringer_generated.go
+$ go run generate.go
+$ go tool golang.org/x/tools/cmd/stringer -type=SignatureKind -output=stringer_generated.go
+$ dprint fmt stringer_generated.go
+$ go tool golang.org/x/tools/cmd/stringer -type=ModuleKind -trimprefix=ModuleKind -output=modulekind_stringer_generated.go
+$ dprint fmt modulekind_stringer_generated.go
+$ go tool golang.org/x/tools/cmd/stringer -type=ScriptTarget -trimprefix=ScriptTarget -output=scripttarget_stringer_generated.go
+$ dprint fmt scripttarget_stringer_generated.go
+$ go tool golang.org/x/tools/cmd/stringer -type=LanguageVariant -output=languagevariant_stringer_generated.go
+$ dprint fmt languagevariant_stringer_generated.go
+$ go tool golang.org/x/tools/cmd/stringer -type=ScriptKind -output=scriptkind_stringer_generated.go
+$ dprint fmt scriptkind_stringer_generated.go
+Formatted 1 file.
+$ go tool golang.org/x/tools/cmd/stringer -type=Tristate -output=tristate_stringer_generated.go
+$ dprint fmt tristate_stringer_generated.go
+$ go run generate.go -diagnostics diagnostics_generated.go -loc loc_generated.go -locdir loc -locproject ../../../tools/LocProject.json -locsource diagnosticMessages.generated.json
+$ dprint fmt diagnostics_generated.go loc_generated.go
+Formatted 1 file.
+$ go tool golang.org/x/tools/cmd/stringer -type=Category -output=stringer_generated.go
+$ dprint fmt stringer_generated.go
+$ go tool golang.org/x/tools/cmd/stringer -type=ExportSyntax -output=export_stringer_generated.go
+$ dprint fmt export_stringer_generated.go
+$ go tool golang.org/x/tools/cmd/stringer -type=Kind -trimprefix=Kind -output=project_stringer_generated.go
+$ dprint fmt project_stringer_generated.go
+$ go tool github.com/matryer/moq -stub -fmt goimports -pkg projecttestutil -out clientmock_generated.go ../../project Client
+$ dprint fmt clientmock_generated.go
+Formatted 1 file.
+$ go tool github.com/matryer/moq -stub -fmt goimports -pkg projecttestutil -out npmexecutormock_generated.go ../../project/ata NpmExecutor
+$ dprint fmt npmexecutormock_generated.go
+$ go tool github.com/matryer/moq -fmt goimports -pkg vfsmock -out vfsmock/mock_generated.go . FS
+$ dprint fmt vfsmock/mock_generated.go
+Formatted 1 file.
+$ go tool golang.org/x/tools/cmd/stringer -type=Usage -trimprefix=Usage -output=stringer_generated.go
+$ dprint fmt stringer_generated.go
+Unicode tables are up to date.
+skipped go -C ./tools run ./gen-preferences ./userPreferences.schema.json ../tsc/internal/ls/lsutil/userpreferences_generated.go ../packages/typescript/src/api/userPreferences.generated.ts; dprint fmt tsc/internal/ls/lsutil/userpreferences_generated.go packages/typescript/src/api/userPreferences.generated.ts: codegen outputs are already up to date
+Enums are up to date.
+skipped go -C ./tools run ./gen-preferences ./userPreferences.schema.json ../tsc/internal/ls/lsutil/userpreferences_generated.go ../packages/typescript/src/api/userPreferences.generated.ts; dprint fmt tsc/internal/ls/lsutil/userpreferences_generated.go packages/typescript/src/api/userPreferences.generated.ts: codegen outputs are already up to date
+skipped go -C ./tools run ./gen-proto ../tsc/internal/api/proto.go ../packages/typescript/src/api/proto.generated.ts; dprint fmt packages/typescript/src/api/proto.generated.ts: codegen outputs are already up to date
+Finished generate:go in 3m 19.9s
+Starting validate
+$ go build -tags=noembed -o /workspace/work/candidate/built/local/tsc ./cmd/tsc
+$ /workspace/work/candidate/tools/gotestsum --format-hide-empty-pkg --hide-summary skipped -- ./...
+✓  cmd/tsc (1.08s)
+✓  internal/api (2.852s)
+✓  internal/api/encoder (58ms)
+✓  internal/api/requestfilesystem (472ms)
+✓  internal/ast (312ms)
+✓  internal/bundled (cached)
+✓  internal/checker (641ms)
+✓  internal/collections (cached)
+✓  internal/compiler (674ms)
+✓  internal/astnav (5.503s)
+✓  internal/core (cached)
+✓  internal/debug (cached)
+✓  internal/diagnostics (635ms)
+✓  internal/contentmapper (5.062s)
+✓  internal/execute/build (33ms)
+✓  internal/execute/tsc (11ms)
+✓  internal/execute/incremental (85ms)
+✓  internal/execute/watchmanager (cached)
+✓  internal/format (1.226s)
+✓  internal/execute/tsctests (16.165s)
+✓  internal/fswatch (cached)
+✓  internal/ipc (cached)
+✓  internal/jsnum (cached)
+✓  internal/ls (1.88s)
+✓  internal/ls/autoimport (3.309s)
+✓  internal/ls/change (26ms)
+✓  internal/ls/lsconv (365ms)
+✓  internal/ls/lsutil (74ms)
+✓  internal/lsp/lsproto (cached)
+✓  internal/lsp/lspwatcher (cached)
+✓  internal/module (162ms)
+✓  internal/modulespecifiers (58ms)
+✓  internal/nativepath (cached)
+✓  internal/outputpaths (cached)
+✓  internal/packagejson (36ms)
+✓  internal/lsp (2.358s)
+✓  internal/parser (7.278s)
+✓  internal/printer (201ms)
+✓  internal/fourslash/tests (1m1.584s)
+✓  internal/project (16.008s)
+✓  internal/project/background (cached)
+✓  internal/project/dirty (cached)
+✓  internal/project/logging (cached)
+✓  internal/scanner (12ms)
+✓  internal/semver (cached)
+✓  internal/sourcemap (cached)
+✓  internal/spanmap (cached)
+✓  internal/stringutil (cached)
+✓  internal/symlinks (cached)
+✓  internal/project/ata (1.372s)
+✓  internal/testutil/contentmappertest (39ms)
+✓  internal/tracing (15ms)
+✓  internal/transformers/tstransforms (28ms)
+✓  internal/transpile (29ms)
+✓  internal/vfs (cached)
+✓  internal/vfs/cachedvfs (cached)
+✓  internal/vfs/iovfs (cached)
+✓  internal/vfs/osvfs (cached)
+✓  internal/vfs/vfsmatch (cached)
+✓  internal/vfs/vfsmock (cached)
+✓  internal/vfs/vfstest (cached)
+✓  internal/tspath (cached)
+✓  internal/tsoptions (232ms)
+✓  internal/testrunner (2m3.938s)
+
+DONE 168358 tests, 2140 skipped in 291.771s
+$ npm test -w native-preview
+
+> native-preview@1.0.1 test
+> tsc -b test && esbuild test/index.test.ts --bundle --platform=node --format=cjs --outfile=dist/test/index.test.cjs && node --test dist/test/index.test.cjs
+
+
+  dist/test/index.test.cjs  365.9kb
+
+⚡ Done in 51ms
+▶ content mapper contributions
+  ✔ rejects path separators in source and output extensions (3.27747ms)
+  ✔ accepts compound extensions with non-reserved suffixes (2.662019ms)
+  ✔ rejects builtin extensions and compound extensions ending in them (2.529885ms)
+  ✔ content mapper extensions match document paths case-insensitively (2.115347ms)
+  ✔ serializes the documented inferred project contribution (1.874727ms)
+✔ content mapper contributions (4.311801ms)
+▶ LSP middleware
+  ✔ transforms raw results in registration order without changing requests (0.985943ms)
+  ✔ rejects excluded methods at registration (0.338648ms)
+  ✔ rejects invalid callbacks and registration after extension disposal (0.259043ms)
+  ✔ passes excluded requests through unchanged (0.286461ms)
+  ✔ handles protocol request signatures and preserves token identity (0.388945ms)
+  ✔ passes server failures through without invoking middleware or logging a transformer error (0.295988ms)
+  ✔ preserves null and empty responses and permits intentional replacements (0.340262ms)
+  ✔ isolates mutable context copies between callbacks and from outgoing parameters (0.28373ms)
+  ✔ captures registrations on response arrival, not request dispatch (0.183446ms)
+  ✔ skips remaining transformers when cancellation is requested (0.225353ms)
+  ✔ logs failures, stops the chain, and restores pristine original data (0.189026ms)
+  ✔ disposal is idempotent and affects future chains, not a running chain (0.21801ms)
+✔ LSP middleware (4.512661ms)
+▶ first-party middleware
+  ✔ uses original parameters and results without cloning or freezing (0.898094ms)
+  ✔ supplies third-party callbacks with independent copies of first-party request changes (0.267063ms)
+  ✔ runs first-party middleware around dispatch and third-party response transforms (0.193362ms)
+  ✔ propagates first-party failures without invoking third-party fallback (0.15164ms)
+✔ first-party middleware (1.647778ms)
+✔ transforms real protocol responses and leaves push diagnostics untouched (17.910164ms)
+▶ same-client restart eligibility
+  ✔ permits an unchanged installation, including bare executables (0.246827ms)
+  ✔ requires a new session when a bare executable gains a companion package (0.118224ms)
+  ✔ requires a new session when the package changes at the same binary path (0.085143ms)
+  ✔ requires a new session when the version changes at the same binary path (0.044355ms)
+  ✔ requires a new session when the executable or local status changes (0.072232ms)
+✔ same-client restart eligibility (0.718702ms)
+▶ tsdk package resolution
+  ✔ resolves the TypeScript 7 package (6.991215ms)
+  ✔ resolves the TypeScript 7 scoped alias recommended in the 7.0 release post (5.908978ms)
+  ✔ resolves an unscoped TypeScript 7 alias (5.266583ms)
+  ✔ resolves the native-preview package (4.969038ms)
+  ✔ resolves a non-hoisted platform package (4.455501ms)
+  ✔ resolves a platform package hoisted above a workspace (3.987793ms)
+  ✔ resolves a pnpm virtual-store package (3.632135ms)
+  ✔ resolves a pnpm native-preview virtual-store package (2.989051ms)
+  ✔ resolves an npm linked-store package (2.422376ms)
+  ✔ throws when the platform package is missing (1.762643ms)
+✔ tsdk package resolution (7.209206ms)
+▶ TypeScript API module loading
+  ✔ restart detection uses the same canonical path for SDK acquisition and lookup (12.527101ms)
+  ✔ restart detection requires an acquired SDK at the same location and a changed version (18.10014ms)
+  ✔ rejects in-place package upgrades instead of returning cached modules or opening a mismatched pipe (21.477164ms)
+  ✔ imports an exported module relative to the selected package (18.475615ms)
+  ✔ bare executable SDKs connect without a package but reject module loading (0.979601ms)
+  ✔ SDK connection creation awaits the lifecycle scheduler's result (0.690339ms)
+  ✔ isCurrent is a synchronous live snapshot without opening a pipe (0.594495ms)
+  ✔ rejects invalid export paths (21.379329ms)
+  ✔ rejects a manifest without a package name (9.559788ms)
+✔ TypeScript API module loading (24.007139ms)
+ℹ tests 46
+ℹ suites 6
+ℹ pass 46
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 146.324745
+$ node ./node_modules/typescript/bin/tsc -p packages/typescript/tsconfig.dist.json
+$ /workspace/work/candidate/tools/custom-gcl run --config ../.golangci.yml
+0 issues.
+Linting tools
+$ /workspace/work/candidate/tools/custom-gcl run --config ../.golangci.yml
+0 issues.
+$ dprint fmt
+Finished validate in 8m 14.9s
+Completed validate in 11m 34.9s

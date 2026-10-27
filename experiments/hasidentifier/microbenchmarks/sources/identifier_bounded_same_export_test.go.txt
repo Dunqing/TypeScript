@@ -1,0 +1,32 @@
+package ast
+
+import "github.com/microsoft/TypeScript/tsc/internal/collections"
+
+func RebuildIdentifiersForBoundedProbe(file *SourceFile, baseline bool) {
+	if baseline {
+		file.identifiers = collectBaselineIdentifiersForBoundedProbe(file)
+	} else {
+		file.identifiers = collectIdentifiersForSourceFile(file)
+	}
+	file.identifiersOnce.Do(func() {})
+}
+
+func collectBaselineIdentifiersForBoundedProbe(sourceFile *SourceFile) collections.Set[string] {
+	var identifiers collections.Set[string]
+	var collect func(*Node) bool
+	collect = func(node *Node) bool {
+		switch node.Kind {
+		case KindIdentifier,
+			KindPrivateIdentifier,
+			KindStringLiteral,
+			KindNumericLiteral,
+			KindBigIntLiteral,
+			KindNoSubstitutionTemplateLiteral:
+			identifiers.Add(node.Text())
+		}
+		node.ForEachChild(collect)
+		return false
+	}
+	collect(sourceFile.AsNode())
+	return identifiers
+}
